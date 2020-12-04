@@ -2,7 +2,7 @@
 
 XPLATJ is a trial project aim to make a cross-platform layer to create application (This project is still in early stage.).
 
-This project contains libgdx,and some native library is extracted from libgdx.
+This project contains libgdx,and some native library are extracted from libgdx.
 
 ## How to build
 
@@ -30,7 +30,7 @@ export ANDROID_NDK=AndroidNdkDir  #set Android ndk location
 export ANDROID_HOME=AndroidSdkDir #set Android sdk location
 cp $SDL_SOURCE_ROOT $XPLATJ_SOURCE_ROOT/SDL  #copy SDL source
 cd launcher
-export targetsysname=windows-x86_64 #set target platform, can be one of android,javase-lwjgl
+export targetsysname=javase-lwjgl #set target platform, can be one of android,javase-lwjgl
 $SHELL build.sh
 ```
 
