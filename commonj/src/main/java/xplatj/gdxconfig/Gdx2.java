@@ -5,9 +5,7 @@ import xplatj.platform.module.Module;
 import xplatj.platform.storage.Storage;
 
 public class Gdx2 {
-	static {
-		graphics = new GraphicsControl();
-	}
+
 	public static GraphicsControl graphics;
 	public static GdxEntry entry;
 	public static Module module;

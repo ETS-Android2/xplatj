@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import xplatj.gdxconfig.control.GraphicsControlImpl;
 import xplatj.gdxconfig.core.PlatCoreConfig;
 import xplatj.gdxconfig.gui.GdxDefaultApp;
 import xplatj.gdxconfig.gui.PlatGdxVariableTable;
@@ -31,7 +32,7 @@ public class GdxEntry implements ApplicationListener {
 		if(PlatCoreConfig.get()==null) {
 			PlatCoreConfig.singleton.set(new PlatCoreConfig());
 		}
-		
+		Gdx2.graphics=new GraphicsControlImpl();
 		core = PlatCoreConfig.get();
 		core.context=new PlatGdxVariableTable(core.context);
 		IFile f = core.fs.resolve("/6/cfg.ini");
