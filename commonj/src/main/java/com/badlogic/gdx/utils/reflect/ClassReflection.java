@@ -22,7 +22,7 @@ import java.lang.reflect.Modifier;
  * @author nexsoftware */
 public final class ClassReflection {
 
-	
+	static public ClassLoader classLoader=ClassReflection.class.getClassLoader();
 	/** Returns the Class object associated with the class or interface with the supplied string name. */
 	static public Class forName (String name) throws ReflectionException {
 		try {
