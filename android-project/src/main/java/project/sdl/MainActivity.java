@@ -11,7 +11,6 @@ import org.libsdl.app.*;
 
 public class MainActivity extends SDLActivity
 {
-	String entryPath;
 	
 	private String escapeStr(String s){
 		StringBuffer buf=new StringBuffer();
@@ -53,28 +52,22 @@ public class MainActivity extends SDLActivity
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		try {
-			
-			Scanner scan=new Scanner(new FileInputStream(AssetsCopy.assetsDir + "/flat"));
-			scan.next();
-			scan.next();
-			String entrySo=scan.next();
-			entryPath=escapeStr(entrySo);
-			scan.close();
-			if(!entryPath.startsWith("/data")){
-				String newEntry=new File(this.getFilesDir(),"entry.so").getAbsolutePath();
-				copy(entryPath,newEntry);
-				entryPath=newEntry;
-			}
-		} catch (FileNotFoundException e) {
-			finish();
-		}
 	}
-
+	@Override
+	protected String[] getLibraries() {
+		return new String[] {
+				"hidapi",
+				"SDL2",
+				// "SDL2_image",
+				// "SDL2_mixer",
+				// "SDL2_net",
+				// "SDL2_ttf",
+		};
+	}
 	@Override
 	protected String getMainSharedObject()
 	{
-		return entryPath;
+		return "libSDLLoader.so";
 	}
 	
 

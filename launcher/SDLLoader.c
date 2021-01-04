@@ -1,69 +1,135 @@
 
+
 #include <stdlib.h>
 #include <stdio.h>
 
 #ifdef __ANDROID__
 #define SDL_DISABLE_IMMINTRIN_H 1
+#define BOOT_DIR "/sdcard/xplat"
+#define DATA_DIR "/data/data/project.xplat/files"
+#else 
+#define BOOT_DIR "res"
+#define DATA_DIR "data"
 #endif
+
 
 #include <SDL.h>
 
-typedef int (*SDL_main_func)(int argc,char *argv[]);
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <libtcc.h>
+#include <string.h>
+
+#include "sljit_allocator.c"
+
+
+
+#define add_symbol(symbol_name) {.name=#symbol_name,.val=&symbol_name}
+
+struct c_symbol{
+    char *name;
+    void *val;
+};
+
+
+FILE *logfile=NULL;
+
+int log3(const char *str){
+	if(logfile==NULL){
+		logfile=fopen(DATA_DIR"/stdlog.txt","ab+");
+	}
+	fwrite(str,strlen(str),1,logfile);
+	fflush(logfile);
+	return 0;
+}
+
+struct c_symbol initSym[]={
+    //memory
+    add_symbol(malloc),add_symbol(realloc),add_symbol(free),add_symbol(memmove),add_symbol(memcpy),
+    //basic IO 
+    add_symbol(fopen),add_symbol(fclose),add_symbol(fread),add_symbol(fwrite),add_symbol(fseek),add_symbol(log3),
+    //environ
+    add_symbol(getenv),add_symbol(putenv),
+    //TinyCC API
+    add_symbol(tcc_new),add_symbol(tcc_delete),add_symbol(tcc_set_lib_path),
+    add_symbol(tcc_set_error_func),add_symbol(tcc_get_error_func),add_symbol(tcc_get_error_opaque),
+    add_symbol(tcc_set_options),add_symbol(tcc_add_include_path),add_symbol(tcc_add_sysinclude_path),
+    add_symbol(tcc_define_symbol),add_symbol(tcc_undefine_symbol),add_symbol(tcc_add_file),
+    add_symbol(tcc_compile_string),add_symbol(tcc_set_output_type),add_symbol(tcc_add_library_path),
+    add_symbol(tcc_add_symbol),add_symbol(tcc_output_file),
+    add_symbol(tcc_relocate),add_symbol(tcc_get_symbol),add_symbol(tcc_list_symbols),
+    //SLJIT allocator
+    add_symbol(sljit_malloc_exec),add_symbol(sljit_free_exec),add_symbol(sljit_free_unused_memory_exec),
+
+    //end
+    {"",NULL}
+};
+
+typedef void *(*entry_func)(void *);
+
 
 int SDL_main(int argc,char *argv[]){
-    FILE *flatCfgFile=fopen("./res/flat","r");
-    char *buf2=(char *)malloc(0x100);
-    char *buf=(char *)malloc(0x100);
-    char *pch;
-    char *pch2;
-    void *dll;
-    int returnFromSdl=0;
-    SDL_main_func entry_func;
-    
-    fscanf(flatCfgFile,"%s",buf2);
-    fscanf(flatCfgFile,"%s",buf2);
-    fscanf(flatCfgFile,"%s",buf2);
-    fclose(flatCfgFile);
-    pch2=buf;
-    for(pch=buf2;*pch!=0&&(pch-buf2<0x100);pch++){
-        if(*pch=='\\'){
-            pch++;
-            if(*pch=='s'){
-                *pch2=' ';
-            }else if(*pch=='r'){
-                *pch2='\r';
-            }
-            else if(*pch=='n'){
-                *pch2='\n';
-            }
-            else if(*pch=='t'){
-                *pch2='\t';
-            }
-            else if(*pch=='\\'){
-                *pch2='\\';
-            }else{
-                *pch2='?';
-            }
-        }else{
-            *pch2=*pch;
+	
+    struct stat fileStat;
+    int boot0;
+	
+	log3("SDLLoader startup\n");
+	FILE *redirecterr=freopen(DATA_DIR"/stderr.txt","ab+",stderr);
+	
+    boot0=open(BOOT_DIR"/boot0.c",O_RDONLY);
+	
+	fflush(stdout);
+    #if DEBUG == 1
+	log3("open file..."BOOT_DIR"/boot0.c\n");
+    #endif
+    if(boot0>=0){
+        close(boot0);
+        TCCState *tccStat=tcc_new();
+        tcc_set_options(tccStat,"-nostdlib");
+        tcc_add_file(tccStat,BOOT_DIR"/boot0.c");
+        tcc_set_output_type(tccStat,TCC_OUTPUT_OBJ);
+        tcc_output_file(tccStat,DATA_DIR"/boot0.o");
+        tcc_delete(tccStat);
+    }else{
+		log3("failed\n");
+	}
+	log3("open file..."DATA_DIR"/boot0.o\n");
+    boot0=open(DATA_DIR"/boot0.o",O_RDONLY);
+    if(boot0>0){
+        close(boot0);
+        TCCState *tccStat=tcc_new();
+        tcc_add_file(tccStat,DATA_DIR"/boot0.o");
+        tcc_set_output_type(tccStat,TCC_OUTPUT_MEMORY);
+        tcc_set_options(tccStat,"-nostdlib");
+		log3("register symbol...\n");
+		for(struct c_symbol *p=initSym;p->val!=NULL;p++){
+            tcc_add_symbol(tccStat,p->name,p->val);
         }
-        pch2++;
+		log3("allocate executable memory...\n");
+        int memRequire=tcc_relocate(tccStat,NULL);
+        void *mem=sljit_malloc_exec(memRequire);
+		log3("relocate elf...\n");
+        tcc_relocate(tccStat,mem);
+		log3("find entry function _start");
+		entry_func entry=(entry_func)tcc_get_symbol(tccStat,"_start");
+        tcc_delete(tccStat);
+		if(entry==NULL){
+			log3("entry function not found...\n");
+		}else{
+			log3("run entry function...\n");
+			entry(NULL);
+		}
+		log3("entry function returned...\n");
+        sljit_free_exec(mem);
+    }else{
+        log3("failed\n");
     }
-    *pch2=0;
-    free(buf2);
-    dll=SDL_LoadObject(buf);
-    free(buf);
-    if(dll==NULL){
-        printf("Entry Not Found");
-        return 1;
-    }
-    entry_func=(SDL_main_func)SDL_LoadFunction(dll,"SDL_main");
-    if(entry_func==NULL){
-        printf("Entry Not Found");
-        SDL_UnloadObject(dll);
-        return 1;
-    }
-    returnFromSdl=entry_func(argc,argv);
-    SDL_UnloadObject(dll);
-    return returnFromSdl;
+	log3("exit\n");
+	if(logfile!=NULL){
+		fclose(logfile);
+		logfile=NULL;
+	}
+	fclose(redirecterr);
+    return 0;
 }

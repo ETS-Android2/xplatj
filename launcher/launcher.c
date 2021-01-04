@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
       fclose(flatConfigFile);
 #ifdef __WIN32
       system("cmd.exe /c \".\\bin\\xplatj.bat\"");
-#elif __linux
+#elif defined __linux
       system("sh -c ./bin/xplatj");
 #endif
     } else if (opType == 2) {
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 	  
 #ifdef __WIN32
       system(".\\bin\\SDLLoader");
-#elif __linux
+#elif defined __linux
       system("./bin/SDLLoader");
 #endif
     } else {

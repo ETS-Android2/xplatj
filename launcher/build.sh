@@ -9,7 +9,7 @@ then
   echo unknown targetsysname
 fi
 
-if make -v
+if $MAKE -v
 then
   case $buildsysname in
     Msys)
@@ -34,17 +34,24 @@ fi
 
 echo "G: $CmakeGenerator"
 
-
+if test -z "$CPU"
+then
+  export CPU=`uname -m`
+fi
 
 case $targetsysname in
-  javase-lwjgl*)
-    if ! cmake -S . -B build -G "$CmakeGenerator" -DCMAKE_BUILD_TYPE=RELEASE
-    then
-      echo cmake fail.
-      exit
-    fi
+  windows*|linux*)
+  export targetos=$targetsysname
+  $SHELL ../tinycc-build/configure.sh
+  if ! cmake -S . -B build -G "$CmakeGenerator" -DCMAKE_BUILD_TYPE=RELEASE
+  then
+    echo cmake fail.
+    exit
+  fi
   ;;
   android*)
+    export targetos=android
+    $SHELL ../tinycc-build/configure.sh
     if ! cmake \
     -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
     -DANDROID_ABI=armeabi-v7a -DANDROID_NATIVE_API_LEVEL=19 \
@@ -79,10 +86,11 @@ case $targetsysname in
   rm -R ../android-project/src/main/java/org/libsdl
   cp -r ../SDL/android-project/app/src/main/java/org/libsdl ../android-project/src/main/java/org/libsdl
   cp build/build-sdl/*.so ../android-project/src/main/jniLibs/armeabi-v7a
+  cp build/libSDLLoader.so ../android-project/src/main/jniLibs/armeabi-v7a
   cd ../android-project
   gradle assembleRelease
   ;;
-  javase-lwjgl*)
+  windows*|linux*)
   if test ! -d dist
   then
     mkdir dist
