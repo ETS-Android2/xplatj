@@ -42,6 +42,8 @@ export CPU=x86_64  # set target CPU arch, to build tinycc. can be one of i386,x8
 export CC=GCC
 export CXX=G++
 export AR=ar
+export MAKE=make
+export SHELL=sh
 # set compiler environment variable. For example. on Android, you may need to set like below
 # CC="$ANDROID_NDK/toolchains/llvm/prebuilt/$toolchainPlat/bin/armv7a-linux-androideabi19-clang -fPIE -fPIC"
 # CXX="$ANDROID_NDK/toolchains/llvm/prebuilt/$toolchainPlat/bin/armv7a-linux-androideabi19-clang++ -fPIE -fPIC"
