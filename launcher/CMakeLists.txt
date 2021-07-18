@@ -11,7 +11,6 @@ project(xplat-launcher)
 
 add_subdirectory(../SDL ./build-sdl)
 
-find_library(SDL2 SDL2)
 
 if(ANDROID)
 add_library(SDLLoader SHARED SDLLoader.c)
