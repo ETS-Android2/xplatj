@@ -10,20 +10,21 @@ import android.view.Window;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import org.java_websocket.server.WebSocketServer;
+import lib.pursuer.simplewebserver.XplatHTTPDServer;
 import org.nanohttpd.protocols.http.NanoHTTPD;
 import project.xplat.launcher.AssetsCopy;
 import project.xplat.launcher.pxprpcapi.ApiServer;
 import xplatj.gdxconfig.core.PlatCoreConfig;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.TreeMap;
 
 public class MainActivity extends Activity {
-    void bgThread(){
-        if(ApiServer.defaultAndroidContext==null){
-            ApiServer.funcMap=new TreeMap<String, Object>();
-            ApiServer.defaultAndroidContext=this.getApplicationContext();
+    void bgThread() {
+        if (ApiServer.defaultAndroidContext == null) {
+            ApiServer.funcMap = new TreeMap<String, Object>();
+            ApiServer.defaultAndroidContext = this.getApplicationContext();
             ApiServer srv = new ApiServer();
             try {
                 srv.start();
@@ -31,47 +32,53 @@ public class MainActivity extends Activity {
             }
         }
     }
+
     static NanoHTTPD httpd;
-    void initWebServer(){
+    static int httpdPort = 2080;
+
+    void initWebServer() {
         try {
-            if(httpd==null){
-                Log.d("webapp","create new web server.");
-                httpd=new NanoHTTPD() {
-                };
-                wss.start();
+            if (httpd == null) {
+                Log.d("webapp", "create new web server.");
+                httpd = new XplatHTTPDServer("localhost", httpdPort, new File("/"));
+                httpd.start(60 * 1000);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void openSystemWebBrowser(String url) {
         Intent intent = new Intent();
         intent.setAction("android.intent.action.VIEW");
-        Uri content_url = Uri.parse("https://www.baidu.com");
+        Uri content_url = Uri.parse(url);
         intent.setData(content_url);
         startActivity(intent);
     }
 
     protected WebView mWebView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         PlatCoreConfig.get().executor.execute(
-            new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.bgThread();
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        MainActivity.this.bgThread();
+                    }
                 }
-            }
         );
 
     }
 
-    protected void initWebView(){
-        mWebView=new WebView(this);
+    protected void initWebView() {
+        mWebView = new WebView(this);
         setContentView(mWebView);
         mWebView.getSettings().setDefaultTextEncodingName("utf-8");
         mWebView.getSettings().setJavaScriptEnabled(true);
-        mWebView.setWebViewClient(new WebViewClient(){
+        mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
                 handler.proceed();
@@ -80,7 +87,7 @@ public class MainActivity extends Activity {
         mWebView.getSettings().setAllowFileAccess(true);
         mWebView.getSettings().setAllowContentAccess(true);
         mWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
-        mWebView.loadUrl("file://"+ AssetsCopy.assetsDir+"/index.html");
+        mWebView.loadUrl("http://localhost:" + httpdPort + AssetsCopy.assetsDir + "/index.html");
     }
 
     @Override
@@ -88,12 +95,8 @@ public class MainActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    wss.stop();
-                    wss=null;
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                httpd.stop();
+                httpd = null;
             }
         }).start();
         super.onDestroy();
