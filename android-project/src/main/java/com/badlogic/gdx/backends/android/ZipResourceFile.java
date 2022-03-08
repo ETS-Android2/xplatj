@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -399,9 +400,9 @@ public class ZipResourceFile {
 
 			/* get the CDE filename */
 
-			directoryMap.position(currentOffset + kCDELen);
+			((Buffer)directoryMap).position(currentOffset + kCDELen);
 			directoryMap.get(tempBuf, 0, fileNameLen);
-			directoryMap.position(0);
+			((Buffer)directoryMap).position(0);
 
 			/* UTF-8 on Android */
 			String str = new String(tempBuf, 0, fileNameLen);

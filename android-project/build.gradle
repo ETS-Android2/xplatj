@@ -12,7 +12,7 @@ buildscript {
 		google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.4'
+        classpath 'com.android.tools.build:gradle:3.5.2'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -24,7 +24,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "27.0.3"
+    buildToolsVersion "28.0.3"
 	lintOptions{
 	 abortOnError false
 	}
@@ -36,7 +36,10 @@ android {
 			keyPassword '123456'
 		}
 	}
-		
+	compileOptions{
+		targetCompatibility 1.7
+		sourceCompatibility 1.7
+	}
 	buildTypes{
 		release{
 			signingConfig signingConfigs.release
@@ -47,9 +50,8 @@ android {
 
 
 dependencies {
-	compile fileTree(dir:'src/main/jar',include:['*.jar']);
-	
-	compile project(':xplatj-commonj');
+	implementation fileTree(dir:'src/main/jar',include:['*.jar']);
+	implementation project(':xplatj-commonj');
 }
 
 // In this section you declare where to find the dependencies of your project

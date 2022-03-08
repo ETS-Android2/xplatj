@@ -11,7 +11,6 @@ import java.net.URLClassLoader;
 
 import com.badlogic.gdx.Gdx;
 
-import main.JMain;
 import xplatj.javaplat.pursuer.filesystem.IFile;
 import xplatj.javaplat.pursuer.io.stream.StreamTransmit;
 import xplatj.platform.module.Module;

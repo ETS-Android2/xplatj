@@ -1,5 +1,6 @@
-package main;
+package project.xplatj;
 
+import lib.pursuer.simplewebserver.XplatHTTPDServer;
 import xplatj.gdxconfig.GdxEntry;
 import xplatj.gdxconfig.Gdx2;
 
@@ -8,6 +9,9 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 
 import project.xplatj.backend.jse.DesktopModule;
 import project.xplatj.backend.jse.DesktopStorage;
+
+import java.io.File;
+import java.io.IOException;
 
 public class JMain {
 	static Lwjgl3Application japp;

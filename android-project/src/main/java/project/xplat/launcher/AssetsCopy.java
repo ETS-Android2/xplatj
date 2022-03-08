@@ -1,16 +1,19 @@
 package project.xplat.launcher;
 
 
-import android.content.*;
-import android.content.res.*;
-import java.io.*;
-import android.util.*;
+import android.content.Context;
+import android.content.res.AssetManager;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class AssetsCopy {
 	private Context mContext;
 	public static AssetsCopy ac;
 	public static String assetsDir="/sdcard/xplat";
-	public static boolean loadAssets(Context ctx) throws IOException{
+	public static boolean loadAssets(Context ctx) throws IOException {
 		File f=new File(assetsDir+"/flat");
 		if(f.exists()){
 			return false;
@@ -28,28 +31,28 @@ public class AssetsCopy {
 		boolean isCopy = true;
 		AssetManager mAssetManger = mContext.getAssets();
 		String[] fileNames=mAssetManger.list(oldPath);
-		
+
 		if (fileNames.length > 0) {
-			File file = new File(newPath);  
+			File file = new File(newPath);
 			file.mkdirs();
 			for (String fileName : fileNames) {
-				if(oldPath=="")   
-					CopyFiles(fileName,newPath+"/"+fileName);  
+				if(oldPath=="")
+					CopyFiles(fileName,newPath+"/"+fileName);
 				else
-					CopyFiles(oldPath+"/"+fileName,newPath+"/"+fileName);            		
-			}  
+					CopyFiles(oldPath+"/"+fileName,newPath+"/"+fileName);
+			}
 		}else {
-			InputStream is = mAssetManger.open(oldPath);  
-			FileOutputStream fos = new FileOutputStream(new File(newPath));  
-			byte[] buffer = new byte[1024];  
-			int byteCount=0;                 
+			InputStream is = mAssetManger.open(oldPath);
+			FileOutputStream fos = new FileOutputStream(new File(newPath));
+			byte[] buffer = new byte[1024];
+			int byteCount=0;
 			while((byteCount=is.read(buffer))!=-1) {
 				fos.write(buffer, 0, byteCount);
-			}  
+			}
 			fos.flush();
-			is.close();  
-			fos.close();  
-		}  
+			is.close();
+			fos.close();
+		}
 		return isCopy;
 	}
 
