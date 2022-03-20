@@ -37,6 +37,7 @@ esac
 case $targetos in
   android*)
   cp android-config.mak ../tinycc/config.mak
+  cp android-config.h ../tinycc/config.h
   cd ../tinycc
   $MAKE clean
   $MAKE libtcc.a

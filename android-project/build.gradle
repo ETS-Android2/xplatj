@@ -50,8 +50,9 @@ android {
 
 
 dependencies {
-	implementation fileTree(dir:'src/main/jar',include:['*.jar']);
-	implementation project(':xplatj-commonj');
+	api fileTree(dir:'src/main/jar',include:['*.jar']);
+	api project(':xplatj-commonj');
+	compileOnly files('../tools/classpath/patchednio.jar')
 }
 
 // In this section you declare where to find the dependencies of your project

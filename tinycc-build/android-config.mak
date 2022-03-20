@@ -24,3 +24,4 @@ TARGETOS=linux
 CONFIG_selinux=yes
 VERSION = 0.9.27
 TOPSRC=$(TOP)
+CONFIG_predefs=no

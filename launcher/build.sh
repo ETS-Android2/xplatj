@@ -52,15 +52,23 @@ case $targetsysname in
   android*)
     export targetos=android
     $SHELL ../tinycc-build/configure.sh
+	case $CPU in
+	  arm64|aarch64)
+	  androidabi=arm64-v8a
+	;;
+	  arm|armv7l)
+	  androidabi=armeabi-v7a
+	;;
+	esac
     if ! cmake \
     -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
-    -DANDROID_ABI=armeabi-v7a -DANDROID_NATIVE_API_LEVEL=19 \
+    -DANDROID_ABI=$androidabi -DANDROID_NATIVE_API_LEVEL=21 \
     -DCMAKE_BUILD_TYPE=RELEASE\
     -S . -B build -G "$CmakeGenerator"
-  then
-    echo cmake fail.
-    exit
-  fi
+    then
+      echo cmake fail.
+      exit
+    fi
   ;;
   *)
     echo unsupport targetsysname $targetsysname
@@ -85,8 +93,9 @@ case $targetsysname in
   android*)
   rm -R ../android-project/src/main/java/org/libsdl
   cp -r ../SDL/android-project/app/src/main/java/org/libsdl ../android-project/src/main/java/org/libsdl
-  cp build/build-sdl/*.so ../android-project/src/main/jniLibs/armeabi-v7a
-  cp build/libSDLLoader.so ../android-project/src/main/jniLibs/armeabi-v7a
+  mkdir ../android-project/src/main/jniLibs/$androidabi
+  cp build/build-sdl/*.so ../android-project/src/main/jniLibs/$androidabi
+  cp build/libSDLLoader.so ../android-project/src/main/jniLibs/$androidabi
   cd ../android-project
   gradle assembleRelease
   ;;

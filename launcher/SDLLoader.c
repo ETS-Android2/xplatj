@@ -61,7 +61,8 @@ struct c_symbol initSym[]={
     add_symbol(tcc_relocate),add_symbol(tcc_get_symbol),add_symbol(tcc_list_symbols),
     //SLJIT allocator
     add_symbol(sljit_malloc_exec),add_symbol(sljit_free_exec),add_symbol(sljit_free_unused_memory_exec),
-
+    //SDL
+    add_symbol(SDL_LoadFunction),add_symbol(SDL_LoadObject),add_symbol(SDL_UnloadObject),
     //end
     {"",NULL}
 };
