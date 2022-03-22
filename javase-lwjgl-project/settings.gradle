@@ -9,5 +9,3 @@
 
 
 rootProject.name = 'xplatj'
-include ':xplatj-commonj'
-project(':xplatj-commonj').projectDir = new File(settingsDir, '../commonj')

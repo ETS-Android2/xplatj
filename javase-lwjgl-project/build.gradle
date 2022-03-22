@@ -28,6 +28,19 @@ tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"  
 }
 
+java{
+	sourceSets{
+		main{
+			java{
+				srcDirs '../commonj/src/main/java'
+			}
+			resources{
+				srcDirs '../commonj/src/main/resources'
+			}
+		}
+	}
+}
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -37,7 +50,6 @@ mainClassName='project.xplatj.JMain'
 dependencies {
 	implementation fileTree(dir:'src/main/jar',include:['*.jar']);
 	implementation fileTree(dir:'src/main/jar-native-'+cfg.targetPlatform,include:['*.jar'])
-	implementation project(':xplatj-commonj');
 }
 
 // In this section you declare where to find the dependencies of your project
