@@ -1,9 +1,11 @@
 package project.webapp;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.net.http.SslError;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
@@ -12,8 +14,11 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import lib.pursuer.simplewebserver.XplatHTTPDServer;
 import org.nanohttpd.protocols.http.NanoHTTPD;
+import project.gdx.AndroidModule;
+import project.gdx.AndroidStorage;
 import project.xplat.launcher.AssetsCopy;
 import project.xplat.launcher.pxprpcapi.ApiServer;
+import xplatj.gdxconfig.Gdx2;
 import xplatj.gdxconfig.core.PlatCoreConfig;
 
 import java.io.File;
@@ -22,6 +27,7 @@ import java.util.TreeMap;
 
 public class MainActivity extends Activity {
     void bgThread() {
+        initWebServer();
         if (ApiServer.defaultAndroidContext == null) {
             ApiServer.funcMap = new TreeMap<String, Object>();
             ApiServer.defaultAndroidContext = this.getApplicationContext();
@@ -36,11 +42,10 @@ public class MainActivity extends Activity {
     static NanoHTTPD httpd;
     static int httpdPort = 2080;
 
-    void initWebServer() {
+    public void initWebServer() {
         try {
             if (httpd == null) {
-                Log.d("webapp", "create new web server.");
-                httpd = new XplatHTTPDServer("localhost", httpdPort, new File("/"));
+                httpd = new XplatHTTPDServer("0.0.0.0", httpdPort, new File("/"));
                 httpd.start(60 * 1000);
             }
         } catch (IOException e) {
@@ -62,6 +67,11 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
+        Gdx2.module=new AndroidModule(this);
+        Gdx2.storage=new AndroidStorage(this);
+        if(PlatCoreConfig.get()==null){
+            PlatCoreConfig.singleton.set(new PlatCoreConfig());
+        }
         PlatCoreConfig.get().executor.execute(
                 new Runnable() {
                     @Override
@@ -70,7 +80,7 @@ public class MainActivity extends Activity {
                     }
                 }
         );
-
+        initWebView();
     }
 
     protected void initWebView() {
@@ -87,18 +97,19 @@ public class MainActivity extends Activity {
         mWebView.getSettings().setAllowFileAccess(true);
         mWebView.getSettings().setAllowContentAccess(true);
         mWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
-        mWebView.loadUrl("http://localhost:" + httpdPort + AssetsCopy.assetsDir + "/index.html");
+        mWebView.loadUrl("http://localhost:" + httpdPort +"/localFile"+ AssetsCopy.assetsDir + "/index.html");
     }
 
     @Override
     protected void onDestroy() {
-        new Thread(new Runnable() {
+
+       PlatCoreConfig.get().executor.execute(new Runnable() {
             @Override
             public void run() {
                 httpd.stop();
                 httpd = null;
             }
-        }).start();
+        });
         super.onDestroy();
     }
 }

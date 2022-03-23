@@ -19,7 +19,7 @@ public class MainActivity extends AndroidApplication {
 		acfg = new AndroidApplicationConfiguration();
 		gmain = new GdxEntry();
 		Gdx2.module=new AndroidModule(this);
-		Gdx2.storage=new AndroidStorage();
+		Gdx2.storage=new AndroidStorage(this);
 		initialize(gmain, acfg);
 	}
 

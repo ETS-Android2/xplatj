@@ -1,5 +1,5 @@
 package project.gdx;
-import android.app.*;
+import android.content.Context;
 import android.util.Base64;
 import dalvik.system.*;
 import java.io.*;
@@ -141,8 +141,8 @@ public class AndroidModule implements Module {
 	public File cacheDir() {
 		return ctx.getCacheDir();
 	}
-	Activity ctx;
-	public AndroidModule(Activity a) {
-		ctx = a;
+	protected Context ctx;
+	public AndroidModule(Context ctx1) {
+		ctx = ctx1;
 	}
 }

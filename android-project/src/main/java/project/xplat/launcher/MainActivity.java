@@ -1,11 +1,14 @@
 package project.xplat.launcher;
 
 
-import android.app.*;
-import android.content.*;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
-import android.os.*;
+
+import android.os.Bundle;
 import android.util.Log;
 
 import java.util.*;
@@ -16,7 +19,7 @@ import android.view.*;
 
 public class MainActivity extends Activity {
 	/** Called when the activity is first created. */
-	public static Activity context;
+	public static Context context;
 	private Intent intent;
 	public static String gdxFlag="gdx";
 	public static String sdlFlag="sdl";
@@ -30,8 +33,8 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
-		
-		context = this;
+
+		MainActivity.context = this.getApplicationContext();
 		try{
 			Runtime.getRuntime().exec("chmod 0777 " + context.getFilesDir().getAbsolutePath());
 			
