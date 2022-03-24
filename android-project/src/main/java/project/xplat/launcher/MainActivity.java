@@ -2,12 +2,15 @@ package project.xplat.launcher;
 
 
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -29,34 +32,70 @@ public class MainActivity extends Activity {
 	
 	
 	MulticastLock multicastLock;
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		
-		super.onCreate(savedInstanceState);
 
-		MainActivity.context = this.getApplicationContext();
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		initEnviron();
+	}
+
+	public void initEnviron(){
 		try{
 			Runtime.getRuntime().exec("chmod 0777 " + context.getFilesDir().getAbsolutePath());
-			
 		}
 		catch (IOException e) {}
-		
-		if(android.os.Build.VERSION.SDK_INT>=19){
+
+		if(Build.VERSION.SDK_INT>=19){
 			context.getExternalFilesDirs(null);
 		}
 		WifiManager wifiMgr = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-		multicastLock = wifiMgr.createMulticastLock("xplat");
-		multicastLock.setReferenceCounted(false);
-		multicastLock.acquire();
-		
-		
-		
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.DONUT) {
+			multicastLock = wifiMgr.createMulticastLock("xplat");
+			multicastLock.setReferenceCounted(false);
+			multicastLock.acquire();
+		}
 		try {
 			AssetsCopy.loadAssets(this);
 		} catch (IOException e) {
 			finish();
 		}
 		launch();
+	}
+	String[] dangerousPerm=new String[]{"android.permission.READ_CALENDAR","android.permission.WRITE_CALENDAR",
+			"android.permission.CAMERA","android.permission.READ_CONTACTS","android.permission.WRITE_CONTACTS",
+			"android.permission.GET_ACCOUNTS","android.permission.ACCESS_FINE_LOCATION","android.permission.RECORD_AUDIO",
+			"android.permission.READ_PHONE_STATE","android.permission.CALL_PHONE","android.permission.READ_CALL_LOG",
+			"android.permission.WRITE_CALL_LOG","android.permission.ADD_VOICEMAIL","android.permission.USE_SIP",
+			"android.permission.BODY_SENSORS","android.permission.SEND_SMS","android.permission.RECEIVE_SMS",
+			"android.permission.READ_SMS","android.permission.RECEIVE_WAP_PUSH","android.permission.RECEIVE_MMS",
+			"android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE"};
+
+
+
+	@TargetApi(Build.VERSION_CODES.M)
+	public String[] getPermissionNotGranted(){
+		ArrayList<String> permNotGranted=new ArrayList<String>();
+		for(String perm:dangerousPerm){
+			if(!(this.checkSelfPermission(perm) == PackageManager.PERMISSION_GRANTED)){
+				permNotGranted.add(perm);
+			}
+		}
+		return permNotGranted.toArray(new String[0]);
+	}
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		
+		super.onCreate(savedInstanceState);
+
+		MainActivity.context = this.getApplicationContext();
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			String[] reqPerms=getPermissionNotGranted();
+			if(reqPerms.length>0) this.requestPermissions(reqPerms,1);
+		}else{
+			initEnviron();
+		}
+
+
 	}
 	public void launch(){
 		try {
@@ -84,7 +123,9 @@ public class MainActivity extends Activity {
 	}
 	@Override
 	protected void onDestroy() {
-		multicastLock.release();
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.DONUT) {
+			multicastLock.release();
+		}
 		super.onDestroy();
 	}
 	@Override
