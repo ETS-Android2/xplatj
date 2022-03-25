@@ -38,6 +38,7 @@ public class WebSocketTunnel extends WebSocket implements Runnable {
                 port = Integer.parseInt(uri2[1]);
             }
             soc=SocketChannel.open(new InetSocketAddress(InetAddress.getByName(ip), port));
+
             new Thread(this).start();
         } catch (IOException e) {
             this.closeQuietly(CloseCode.InternalServerError, e.toString(), false);
@@ -97,6 +98,7 @@ public class WebSocketTunnel extends WebSocket implements Runnable {
                     bb.get(data);
                     this.send(data);
                 }
+                ((Buffer)bb).clear();
             }
             this.closeQuietly(CloseCode.NormalClosure, "normal closed", true);
         } catch (IOException e) {

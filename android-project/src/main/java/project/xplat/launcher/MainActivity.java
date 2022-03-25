@@ -29,7 +29,40 @@ public class MainActivity extends Activity {
 	public static String webFlag="web";
 	public static String shutdownFlag="shutdown";
 	public static String rebootFlag="reboot";
-	
+
+	public static String selectedBackend="";
+	public static String selectedResultAction="shutdown";
+	public static boolean debugMode=false;
+	public static Boolean startOptsParsed=false;
+	public static void ensureStartOpts(){
+		synchronized (startOptsParsed){
+			if(startOptsParsed)return;
+			startOptsParsed=true;
+			FileInputStream in1 = null;
+			try {
+				in1 = new FileInputStream(AssetsCopy.assetsDir + "/flat");
+				byte[] content=new byte[1024];
+				int len=in1.read(content);
+				String[] opts=new String(content,0,len,"utf8").split("\\s+");
+				for(String opt:opts){
+					if("debug".equals(opt)){
+						debugMode=true;
+					}
+				}
+				selectedBackend=opts[0];
+				selectedResultAction=opts[1];
+			} catch (FileNotFoundException e) {
+			} catch (IOException e) {
+			}finally{
+				if(in1!=null){
+					try {
+						in1.close();
+					} catch (IOException ex) {
+					}
+				}
+			}
+		}
+	}
 	
 	MulticastLock multicastLock;
 
@@ -85,7 +118,7 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
-
+		startOptsParsed=false;
 		MainActivity.context = this.getApplicationContext();
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -99,24 +132,22 @@ public class MainActivity extends Activity {
 	}
 	public void launch(){
 		try {
-			Scanner scan=new Scanner(new FileInputStream(AssetsCopy.assetsDir+"/flat"));
-			String param=scan.next();
-			scan.close();
+			ensureStartOpts();
 
-			if(gdxFlag.equals(param)){
+			if(gdxFlag.equals(selectedBackend)){
 				intent=new Intent();
 				intent.setClass(this,Class.forName("project.gdx.MainActivity"));
 				this.startActivityForResult(intent,1);
-			}else if(sdlFlag.equals(param)){
+			}else if(sdlFlag.equals(selectedBackend)){
 				intent=new Intent();
 				intent.setClass(this,Class.forName("project.sdl.MainActivity"));
 				this.startActivityForResult(intent,1);
-			}else if(webFlag.equals(param)){
+			}else if(webFlag.equals(selectedBackend)){
 				intent=new Intent();
 				intent.setClass(this,Class.forName("project.webapp.MainActivity"));
 				this.startActivityForResult(intent,1);
 			}
-		} catch (FileNotFoundException | ClassNotFoundException e) {
+		} catch (ClassNotFoundException e) {
 			finish();
 		}
 		
@@ -132,13 +163,11 @@ public class MainActivity extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		boolean shutdown=true;
 		try{
-			Scanner scan=new Scanner(new FileInputStream(new File(AssetsCopy.assetsDir+"/flat")));
-			scan.next();
-			String param=scan.next();
-			scan.close();
-			if(shutdownFlag.equals(param)){
+			startOptsParsed=false;
+			ensureStartOpts();
+			if(shutdownFlag.equals(selectedResultAction)){
 				shutdown=true;
-			}else if(rebootFlag.equals(param)){
+			}else if(rebootFlag.equals(selectedResultAction)){
 				shutdown=false;
 			}
 		}catch(Exception e){

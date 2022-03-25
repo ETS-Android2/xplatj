@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
+import project.xplat.launcher.MainActivity;
 import project.xplat.launcher.pxprpcapi.videocapture.AndroidCamera2;
 import pursuer.pxprpc_ex.TCPBackend;
 
@@ -12,33 +13,63 @@ import pursuer.pxprpc_ex.TCPBackend;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.TreeMap;
 
 
 public class ApiServer {
-    protected TCPBackend pxpServ;
+    public static TCPBackend tcpServ;
     public static Context defaultAndroidContext;
     public static HandlerThread handlerThread;
     public static Handler handler;
-    public static Map<String, Object> funcMap=new TreeMap<String, Object>();
     public static int port=2050;
     public static Handler getHandler(){
         return handler;
     }
-    public void start() throws IOException {
-        pxpServ= new TCPBackend();
+    public static void serve() throws IOException {
+        tcpServ = new TCPBackend();
         handlerThread = new HandlerThread("PxpRpcHandlerThread");
         handlerThread.start();
         while(handlerThread.getLooper()==null){}
         handler=new Handler(handlerThread.getLooper());
-        pxpServ.bindAddr= new InetSocketAddress(
-                Inet4Address.getByAddress(new byte[]{(byte)0,(byte)0,(byte)0,(byte)0}),port);
+        MainActivity.ensureStartOpts();
+        if(MainActivity.debugMode){
+            tcpServ.bindAddr= new InetSocketAddress(
+                    Inet4Address.getByAddress(new byte[]{(byte)0,(byte)0,(byte)0,(byte)0}),port);
+        }else{
+            tcpServ.bindAddr= new InetSocketAddress(
+                    Inet4Address.getByAddress(new byte[]{(byte)127,(byte)0,(byte)0,(byte)1}),port);
+        }
 
-        pxpServ.funcMap.put("AndroidCamera2",new AndroidCamera2());
-        pxpServ.funcMap.putAll(ApiServer.funcMap);
+        putModule("AndroidCamera2",new AndroidCamera2());
         Log.d("PxpRpc", "start: listen");
-        pxpServ.listenAndServe();
+        tcpServ.listenAndServe();
+    }
+    public static void putModule(String modName,Object module){
+        tcpServ.funcMap.put(modName,module);
+    }
+
+    public static void start(Context context) {
+        defaultAndroidContext=context;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ApiServer.serve();
+                } catch (IOException e) {
+                }
+            }
+        }).start();
+    }
+    public static void stop(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    tcpServ.close();
+                    tcpServ =null;
+                } catch (IOException e) {
+                }
+            }
+        }).start();
 
     }
 }

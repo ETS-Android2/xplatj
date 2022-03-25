@@ -27,25 +27,21 @@ import java.util.TreeMap;
 
 public class MainActivity extends Activity {
     void bgThread() {
+        ApiServer.start(this);
         initWebServer();
-        if (ApiServer.defaultAndroidContext == null) {
-            ApiServer.funcMap = new TreeMap<String, Object>();
-            ApiServer.defaultAndroidContext = this.getApplicationContext();
-            ApiServer srv = new ApiServer();
-            try {
-                srv.start();
-            } catch (IOException e) {
-            }
-        }
     }
-
     static NanoHTTPD httpd;
     static int httpdPort = 2080;
 
     public void initWebServer() {
         try {
             if (httpd == null) {
-                httpd = new XplatHTTPDServer("0.0.0.0", httpdPort, new File("/"));
+                project.xplat.launcher.MainActivity.ensureStartOpts();
+                if(project.xplat.launcher.MainActivity.debugMode){
+                    httpd = new XplatHTTPDServer("0.0.0.0", httpdPort, new File("/"));
+                }else{
+                    httpd = new XplatHTTPDServer("127.0.0.1", httpdPort, new File("/"));
+                }
                 httpd.start(60 * 1000);
             }
         } catch (IOException e) {
@@ -97,7 +93,7 @@ public class MainActivity extends Activity {
         mWebView.getSettings().setAllowFileAccess(true);
         mWebView.getSettings().setAllowContentAccess(true);
         mWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
-        mWebView.loadUrl("http://localhost:" + httpdPort +"/localFile"+ AssetsCopy.assetsDir + "/index.html");
+        mWebView.loadUrl("http://127.0.0.1:" + httpdPort +"/localFile"+ AssetsCopy.assetsDir + "/index.html");
     }
 
     @Override
@@ -110,6 +106,8 @@ public class MainActivity extends Activity {
                 httpd = null;
             }
         });
+        ApiServer.stop();
+
         super.onDestroy();
     }
 }

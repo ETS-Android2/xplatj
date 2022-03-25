@@ -8,6 +8,7 @@ import project.xplat.launcher.*;
 import android.widget.*;
 import java.nio.channels.*;
 import org.libsdl.app.*;
+import project.xplat.launcher.pxprpcapi.ApiServer;
 
 public class MainActivity extends SDLActivity
 {
@@ -49,10 +50,17 @@ public class MainActivity extends SDLActivity
 	}
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		ApiServer.start(this);
 	}
+
+	@Override
+	protected void onDestroy() {
+		ApiServer.stop();
+		super.onDestroy();
+	}
+
 	@Override
 	protected String[] getLibraries() {
 		return new String[] {

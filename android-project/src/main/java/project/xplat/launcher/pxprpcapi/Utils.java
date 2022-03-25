@@ -3,15 +3,15 @@ package project.xplat.launcher.pxprpcapi;
 import java.util.List;
 
 public class Utils {
-    public String joinStringList(Iterable<String> s){
+    public static String joinStringList(Iterable<String> s,String delim){
         StringBuilder sb=new StringBuilder();
         for(String e : s){
             sb.append(e);
-            sb.append(" ");
+            sb.append(delim);
         }
         return sb.toString();
     }
-    public Object elemAt(List<Object> l, int index) {
-        return l.get(index);
+    public String repr(Object o){
+        return o.toString();
     }
 }
