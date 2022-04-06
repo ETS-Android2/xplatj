@@ -41,7 +41,7 @@ public class BuiltInFuncList {
 		return new BoundMethodCallable(found,obj);
 	}
 	public String checkException(Object obj) {
-		if(obj!=null&&obj.getClass().isInstance(Exception.class)){
+		if(obj!=null&&Exception.class.isInstance(obj)){
 			return obj.toString();
 		}else{
 			return "";
@@ -65,7 +65,7 @@ public class BuiltInFuncList {
 	public int listLength(List<Object> array) {
 		return array.size();
 	}
-	public Object listIndexOf(List<Object> array,int index) {
+	public Object listElemAt(List<Object> array,int index) {
 		return array.get(index);
 	}
 	public void listAdd(List<Object> array,Object obj) {
