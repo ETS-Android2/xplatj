@@ -115,6 +115,14 @@
 				android:process=":webapp" >
 		</activity>
 
+		<provider
+				android:name="de.cketti.fileprovider.PublicFileProvider"
+				android:authorities="project.xplat.publicfileprovider"
+				android:exported="true">
+
+
+		</provider>
+
     </application>
 
 </manifest>

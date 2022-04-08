@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 import project.xplat.launcher.MainActivity;
+import project.xplat.launcher.pxprpcapi.androidhelper.Intent2;
 import project.xplat.launcher.pxprpcapi.videocapture.AndroidCamera2;
 import pursuer.pxprpc_ex.TCPBackend;
 
@@ -40,6 +41,7 @@ public class ApiServer {
         }
 
         putModule("AndroidCamera2",new AndroidCamera2());
+        putModule("AndroidHelper-Intent",new Intent2());
         Log.d("PxpRpc", "start: listen");
         tcpServ.listenAndServe();
     }
