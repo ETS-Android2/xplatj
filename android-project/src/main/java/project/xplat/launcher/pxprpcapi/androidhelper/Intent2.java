@@ -1,5 +1,6 @@
 package project.xplat.launcher.pxprpcapi.androidhelper;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.ContentProvider;
 import android.content.Intent;
@@ -68,6 +69,15 @@ public class Intent2 {
             action="android.intent.action.MAIN";
         }
         intent.setAction(action);
+        ApiServer.defaultAndroidContext.startActivity(intent);
+    }
+    public void requestEnableBluetooth(){
+        Intent intent=new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        ApiServer.defaultAndroidContext.startActivity(intent);
+    }
+    public void requestBluetoothDicoverable(int durationSec){
+        Intent intent=new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION,durationSec);
         ApiServer.defaultAndroidContext.startActivity(intent);
     }
     public String getContentUriForFile(String path){

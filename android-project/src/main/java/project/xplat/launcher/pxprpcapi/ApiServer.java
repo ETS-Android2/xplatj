@@ -1,15 +1,15 @@
 package project.xplat.launcher.pxprpcapi;
 
 import android.content.Context;
-
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 import project.xplat.launcher.MainActivity;
+import project.xplat.launcher.pxprpcapi.androidhelper.Bluetooth2;
 import project.xplat.launcher.pxprpcapi.androidhelper.Intent2;
+import project.xplat.launcher.pxprpcapi.androidhelper.SysBase;
 import project.xplat.launcher.pxprpcapi.videocapture.AndroidCamera2;
 import pursuer.pxprpc_ex.TCPBackend;
-
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -39,14 +39,19 @@ public class ApiServer {
             tcpServ.bindAddr= new InetSocketAddress(
                     Inet4Address.getByAddress(new byte[]{(byte)127,(byte)0,(byte)0,(byte)1}),port);
         }
-
+        putModule("AndroidHelper-SysBase",new SysBase());
         putModule("AndroidCamera2",new AndroidCamera2());
+
+        putModule("AndroidHelper-Bluetooth",new Bluetooth2());
         putModule("AndroidHelper-Intent",new Intent2());
         Log.d("PxpRpc", "start: listen");
         tcpServ.listenAndServe();
     }
     public static void putModule(String modName,Object module){
         tcpServ.funcMap.put(modName,module);
+    }
+    public static Object getModule(String modName){
+        return tcpServ.funcMap.get(modName);
     }
 
     public static void start(Context context) {
